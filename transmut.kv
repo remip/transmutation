@@ -1,0 +1,40 @@
+<Splash>:
+	size_hint: (1.0, 1.0)
+	AnchorLayout:
+		on_touch_down: root.app.show('menu')
+		Image:
+			source: 'Data/space.jpg'
+			allow_stretch: True
+			keep_ratio: False
+		Label:
+			text: 'Transmutation'
+			font_size: 75
+			
+<Menu>:
+	AnchorLayout:
+		StackLayout:
+			size_hint: 1, None
+			Label:
+				text: 'Transmutation'
+				font_size: 75
+			Button:
+				on_press: root.app.new_game()
+				text: 'New'
+				font_size: 28
+			Button:
+				on_press: root.app.restore_game()
+				text: 'Continue'
+				font_size: 28
+
+<Element>:
+	size: label.size
+	size_hint: None,None
+	do_rotation: False
+	do_scale: False
+	auto_bring_to_front: True
+	Label:
+		id: label
+		text: root.text		
+		font_size: 24
+			
+
