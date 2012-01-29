@@ -80,10 +80,13 @@ class Transmut(App):
 		self.game()
 		
 	def restore_game(self):
-		g = open(self.data_path + 'savegame', 'rb')
-		self.elements_found = pickle.load(g)
-		g.close()
-		self.game()
+		try:
+			g = open(self.data_path + 'savegame', 'rb')
+			self.elements_found = pickle.load(g)
+			g.close()
+			self.game()
+		except:
+			self.new()
 		
 	def game(self):
 		
