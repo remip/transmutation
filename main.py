@@ -142,6 +142,7 @@ class Transmut(App):
 		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.1*Window.height or f.y>0.9*Window.height):
 			self.universe.remove(f)
 			self.root.remove_widget(f)
+			return 1
 			
 		for e in self.universe:
 			if e == f:
