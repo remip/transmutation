@@ -86,7 +86,7 @@ class Transmut(App):
 			g.close()
 			self.game()
 		except:
-			self.new()
+			self.new_game()
 		
 	def game(self):
 		
