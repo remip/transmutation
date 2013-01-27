@@ -44,6 +44,7 @@ class FullImage(Image):
 
 class Element(Scatter):
 	text = StringProperty('')
+	color = ListProperty([1,1,1,1])
 
 class Transmut(App):
 		
@@ -100,10 +101,10 @@ class Transmut(App):
 		a.add_widget(g1)
 		s = ScrollView(size_hint = (.25, 1), do_scroll_x = False, size_hint_y = None)
 		g1.add_widget(s)
-		self.g2 = GridLayout(size_hint = (1, None), height = len(self.elements_found)*35, cols = 1, spacing = 2)
+		self.g2 = GridLayout(size_hint = (1, None), height = (len(self.elements_found)+1)*50, cols = 1) #, spacing = 2
 		s.add_widget(self.g2)
 		
-		self.l = Label(text="0/"+str(len(self.ether)+4), size_hint = (None, None), height = 35)
+		self.l = Label(text="0/"+str(len(self.ether)+4), size_hint = (None, None), height = 50)
 		self.g2.add_widget(self.l)
 		for e in self.elements_found:
 			self.update_elements_menu(e)
@@ -111,11 +112,12 @@ class Transmut(App):
 		self.root.add_widget(a)
 
 	def update_elements_menu(self,e):
-		b = Button(size_hint = (None, None), height = 30, text = e)
+		b = Button(size_hint = (None, None), height = 50, width = 200, text = e)
 		b.bind(on_press = partial(self.add_element_to_universe,e))
 		self.g2.add_widget(b)
-		self.g2.height = len(self.elements_found)*30
+		self.g2.height = (len(self.elements_found)+ 1)*50 
 		self.l.text = "%d / %d" % (len(self.elements_found), len(self.ether)+4)
+		
 
 	def add_element_to_universe(self,*args):
 		e = args[0]
@@ -135,14 +137,35 @@ class Transmut(App):
 				c = c + 1
 				A.start(x)
 
-		f = Element(text = e, center=Window.center)
+		f = Element(text = e, center=(Window.width,Window.height))
 		f.bind(on_touch_up=partial(self.check_position,f))
+		f.bind(on_touch_move=partial(self.check_color,f))
+		
 		self.universe.append(f)	
 		self.root.add_widget(f)
+		
+		A = Animation(
+			center  = Window.center,
+			transition = 'out_back', 
+			duration = 1
+		)
+		A.start(f)
+		
+		
+		
+		
+
+	def check_color(self,*args):
+		f = args[1]
+		#border => red (delete)
+		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.05*Window.height or f.y>0.90*Window.height):
+			f.color = [1,0,0.4,1]
+		else:
+			f.color = [1,1,1,1]
 
 	def check_position(self,*args):
 		f = args[1]
-		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.1*Window.height or f.y>0.9*Window.height):
+		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.05*Window.height or f.y>0.90*Window.height):
 			self.universe.remove(f)
 			self.root.remove_widget(f)
 			return 1
