@@ -1,0 +1,3 @@
+title=Transmutation
+author=Remi
+orientation=landscape
