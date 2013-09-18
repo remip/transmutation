@@ -48,13 +48,25 @@ class ElementButton(Button):
 	text= StringProperty('')
 
 class Element(Scatter):
-	text = StringProperty('')
+	text  = StringProperty('')
 	color = ListProperty([1,1,1,1])
+	app   = ObjectProperty()
+	
+	def on_touch_up(self, touch):
+		if touch.grab_current is self:
+			self.app.check_position(self)
+		return super(Element, self).on_touch_up(touch)
+		
+	def on_move(self, touch):
+		if touch.grab_current is self:
+			self.app.check_color(self)
+		return super(Element, self).on_touch_up(touch)
+		
 
 class Transmut(App):
 	
 	elements_found = ['Air', 'Earth', 'Fire', 'Water']
-	ether = []
+	ether    = []
 	universe = []
 	
 	def build(self):
@@ -160,9 +172,9 @@ class Transmut(App):
 				c = c + 1
 				A.start(x)
 
-		f = Element(text = e, center=(Window.width,Window.height))
-		f.bind(on_touch_up=partial(self.check_position,f))
-		f.bind(on_touch_move=partial(self.check_color,f))
+		f = Element(text=e, center=(Window.width,Window.height), app=self)
+		#f.bind(on_touch_up=partial(self.check_position,f))
+		#f.bind(on_touch_move=partial(self.check_color,f))
 		
 		self.universe.append(f)	
 		self.game.add_widget(f)
@@ -174,8 +186,7 @@ class Transmut(App):
 		)
 		A.start(f)
 		
-		
-		
+		return 1
 		
 
 	def check_color(self,*args):
@@ -186,8 +197,7 @@ class Transmut(App):
 		else:
 			f.color = [1,1,1,1]
 
-	def check_position(self,*args):
-		f = args[1]
+	def check_position(self,f):
 		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.05*Window.height or f.y>0.90*Window.height):
 			self.universe.remove(f)
 			self.game.remove_widget(f)
