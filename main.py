@@ -4,7 +4,7 @@ A clone of ... something ... with the kivy framework
 
 intro sound http://www.freesound.org/people/ERH/sounds/42286/
 water sound http://www.freesound.org/people/junggle/sounds/30342/
-
+Image credit: NASA/JPL-Caltech
 
 '''
 
@@ -24,14 +24,13 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.button import Button
 from kivy.uix.scatter import Scatter
-from kivy.properties import ObjectProperty, StringProperty, ListProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty, NumericProperty
 from kivy.core.window import Window
 from kivy.animation import Animation
 from kivy.core.audio import SoundLoader
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition, SlideTransition, WipeTransition, SwapTransition, ShaderTransition
+from kivy.garden.moretransitions import PixelTransition, RippleTransition, BlurTransition, RVBTransition, RotateTransition
 from functools import partial
-
-class Screen(FloatLayout):
-	app = ObjectProperty(None)
 
 class Splash(Screen):
 	pass
@@ -39,84 +38,108 @@ class Splash(Screen):
 class Menu(Screen):
 	pass
 
-class FullImage(Image):
-    pass
+class Help(Screen):
+	pass
+
+class Game(Screen):
+	score = NumericProperty(0)
+
+class ElementButton(Button):
+	text= StringProperty('')
 
 class Element(Scatter):
 	text = StringProperty('')
 	color = ListProperty([1,1,1,1])
 
 class Transmut(App):
-		
+	
+	elements_found = ['Air', 'Earth', 'Fire', 'Water']
+	ether = []
+	universe = []
+	
 	def build(self):
-		
-		self.ether = []
-		self.universe = []
+
 		self.data_path = os.path.realpath(os.path.dirname(sys.argv[0])) + os.sep + "Data" + os.sep
+
 		self.load_ether()
 	
 		#self.test()
 		#self.solution()
 		
-		self.root = FloatLayout()
+		self.screenManager = ScreenManager(transition=FadeTransition())
+
+		self.splash = Splash(name="splash")
+		self.menu   = Menu(name="menu")
+		self.help   = Help(name="help")
+		self.game   = Game(name="game")
 		
-		self.screen_menu   = Menu(app=self)
-		self.screen_splash = Splash(app=self)
+		self.screenManager.add_widget(self.splash)
+		self.screenManager.add_widget(self.menu)
+		self.screenManager.add_widget(self.help)
+		self.screenManager.add_widget(self.game)
 		
 		sound_intro = SoundLoader.load(filename= self.data_path + '42286__erh__f-eh-angelic-3.ogg')
 		self.sound_find  = SoundLoader.load(filename= self.data_path + '30342__junggle__waterdrop25.ogg')
 		
 		sound_intro.play()
 		
-		self.show('splash')
+		self.showSplash()
+		
+		return self.screenManager
 
-	def show(self, *args):
-		name = args[0]
-		screen = getattr(self, 'screen_%s' % name)
-		self.root.clear_widgets()
-		self.root.add_widget(screen)
+	def showSplash(self):
+		self.screenManager.current = 'splash'
+		
+		Animation(
+			scale=self.splash.background.scale*1.3, 
+			duration=25.0
+		).start(self.splash.background)
 
-	def new_game(self):
-		self.elements_found = ['Air', 'Earth', 'Fire', 'Water']
-		self.game()
+	def showMenu(self):
+		self.screenManager.transition=RippleTransition(duration=2.0)
+		self.screenManager.current = 'menu'
+		
+		Animation(
+			scale=self.menu.background.scale*1.3, 
+			duration=25.0
+		).start(self.menu.background)
+		
+	def showHelp(self):
+		self.screenManager.transition=BlurTransition(duration=2.0)
+		self.screenManager.current = 'help'
+		
+		Animation(
+			scale=self.help.background.scale*1.3, 
+			duration=25.0
+		).start(self.help.background)
+		
+	
+
+	def newGame(self):
+		self.showGame()
 		
 	def restore_game(self):
 		try:
 			g = open(self.data_path + 'savegame', 'rb')
 			self.elements_found = pickle.load(g)
 			g.close()
-			self.game()
+			self.showGame()
 		except:
-			self.new_game()
+			self.showHelp()
+
+	def showGame(self):
 		
-	def game(self):
-		
-		self.root.clear_widgets()
-		
-		a = AnchorLayout()
-		i = Image(source = 'Data/space.jpg', allow_stretch = True, keep_ratio =  False)
-		a.add_widget(i)
-		
-		g1 = GridLayout(size_hint = (1,1), cols = 2, rows = 1)
-		a.add_widget(g1)
-		s = ScrollView(size_hint = (.25, 1), do_scroll_x = False, size_hint_y = None)
-		g1.add_widget(s)
-		self.g2 = GridLayout(size_hint = (1, None), height = (len(self.elements_found)+1)*50, cols = 1) #, spacing = 2
-		s.add_widget(self.g2)
-		
-		self.l = Label(text="0/"+str(len(self.ether)+4), size_hint = (None, None), height = 50)
-		self.g2.add_widget(self.l)
 		for e in self.elements_found:
 			self.update_elements_menu(e)
 		
-		self.root.add_widget(a)
+		self.screenManager.transition=FadeTransition(duration=1.0)
+		self.screenManager.current = 'game'
+
 
 	def update_elements_menu(self,e):
-		b = Button(size_hint = (None, None), height = 50, width = 200, text = e)
-		b.bind(on_press = partial(self.add_element_to_universe,e))
-		self.g2.add_widget(b)
-		self.g2.height = (len(self.elements_found)+ 1)*50 
-		self.l.text = "%d / %d" % (len(self.elements_found), len(self.ether)+4)
+		self.game.elementlist.add_widget(ElementButton(text=e))
+		self.game.score = self.game.score + 1
+
 		
 
 	def add_element_to_universe(self,*args):
@@ -142,7 +165,7 @@ class Transmut(App):
 		f.bind(on_touch_move=partial(self.check_color,f))
 		
 		self.universe.append(f)	
-		self.root.add_widget(f)
+		self.game.add_widget(f)
 		
 		A = Animation(
 			center  = Window.center,
@@ -167,7 +190,7 @@ class Transmut(App):
 		f = args[1]
 		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.05*Window.height or f.y>0.90*Window.height):
 			self.universe.remove(f)
-			self.root.remove_widget(f)
+			self.game.remove_widget(f)
 			return 1
 			
 		for e in self.universe:
@@ -179,8 +202,8 @@ class Transmut(App):
 					self.sound_find.play()
 					self.universe.remove(e)
 					self.universe.remove(f)
-					self.root.remove_widget(e)
-					self.root.remove_widget(f)
+					self.game.remove_widget(e)
+					self.game.remove_widget(f)
 					self.add_element_to_universe(b)
 					if b not in self.elements_found:
 						self.elements_found.append(b)

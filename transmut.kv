@@ -1,31 +1,140 @@
+#root
+FloatLayout:
+	Label:
+		text: 'loading...'
+
 <Splash>:
-	size_hint: (1.0, 1.0)
+	background: background
 	AnchorLayout:
-		on_touch_down: root.app.show('menu')
-		Image:
-			source: 'Data/space.jpg'
-			allow_stretch: True
-			keep_ratio: False
+		on_touch_down: app.showMenu()
+		Scatter:
+			id: background
+			do_rotation: False
+			do_translation: False
+			do_scale: False
+			Image:
+				source: 'Data/729665main_A-BlackHoleArt-pia16695_full.jpeg'
+				width: root.width
+				height: root.height
+				allow_stretch: True
+				keep_ratio: False
 		Label:
 			text: 'Transmutation'
-			font_size: 75
-			
+			font_size: 128
+		
 <Menu>:
+	background: background
 	AnchorLayout:
-		StackLayout:
-			size_hint: 1, None
+		Scatter:
+			id: background
+			do_rotation: False
+			do_translation: False
+			do_scale: False
+			Image:
+				source: 'Data/space.jpg'
+				width: root.width
+				height: root.height
+				allow_stretch: True
+				keep_ratio: False
+		GridLayout:
+			cols: 1
+			rows: 2
 			Label:
 				text: 'Transmutation'
-				font_size: 75
-			Button:
-				on_press: root.app.new_game()
-				text: 'New'
-				font_size: 28
-			Button:
-				on_press: root.app.restore_game()
-				text: 'Continue'
-				font_size: 28
+				font_size: 128
+				size_hint_y: 0.7
+			GridLayout:
+				size_hint_y: 0.3
+				cols: 2
+				rows: 1
+				padding: 40
+                spacing: 20
+				Button:
+					on_press: app.showHelp()
+					text: 'New game'
+					font_size: 28
+					width: 300
+					height: 200
+				Button:
+					on_press: app.restore_game()
+					text: 'Continue'
+					font_size: 28
+					width: 300
+					height: 200
 
+
+<Help>:
+	background: background
+	AnchorLayout:
+		Scatter:
+			id: background
+			do_rotation: False
+			do_translation: False
+			do_scale: False
+			Image:
+				source: 'Data/space.jpg'
+				width: root.width
+				height: root.height
+				allow_stretch: True
+				keep_ratio: False
+		BoxLayout:
+			orientation: 'vertical'
+			Label:
+				text: 'How to play ?'
+				font_size: 72
+			Label:
+				text: 'Select elements from the list.'
+				font_size: 32
+			Label:
+				text: 'Drag & drop elements and combine them to form new ones.'
+				font_size: 32
+			Label:
+				text: 'Drop elements near the screen border to delete them.'
+				font_size: 32
+			AnchorLayout:
+				anchor_y: 'center'
+				anchor_x: 'right'
+				padding: 100
+				Button:
+					size_hint_x: 0.2	
+					on_press: app.newGame()
+					text: 'Start game'
+					font_size: 28
+				
+<Game>:
+	elementlist: elementlist
+	AnchorLayout:
+		Image:
+			source: 'Data/space.jpg'
+			width: root.width
+			height: root.height
+			allow_stretch: True
+			keep_ratio: False
+		GridLayout:
+			cols: 2
+			rows: 1
+			ScrollView:
+				#size_hint: (.25, 1)
+				height: root.height
+				do_scroll_x: False
+				size_hint_y: None				
+				GridLayout:
+					id: elementlist
+					size_hint: (1,None)
+					cols: 1
+					height: (root.score+1)*50
+					Label:
+						text: "%d / %d" % (root.score, len(app.ether)+4)
+						size_hint: (None,None)
+						height: 50
+
+<ElementButton>:
+	size_hint: (None, None)
+	height: 50
+	width: 200
+	text: root.text
+	on_press: app.add_element_to_universe(root.text)
+	
 <Element>:
 	size: label.size
 	size_hint: None,None
