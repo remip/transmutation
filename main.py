@@ -57,11 +57,14 @@ class Element(Scatter):
 			self.app.check_position(self)
 		return super(Element, self).on_touch_up(touch)
 		
-	def on_move(self, touch):
+	def on_touch_move(self, touch):
 		if touch.grab_current is self:
 			self.app.check_color(self)
-		return super(Element, self).on_touch_up(touch)
+		return super(Element, self).on_touch_move(touch)
 		
+class ElementPop(Scatter):
+	text  = StringProperty('')
+	color = ListProperty([1,1,1,1])
 
 class Transmut(App):
 	
@@ -189,8 +192,7 @@ class Transmut(App):
 		return 1
 		
 
-	def check_color(self,*args):
-		f = args[1]
+	def check_color(self,f):
 		#border => red (delete)
 		if f in self.universe and (f.x <0.1*Window.width or f.x>0.9*Window.width or f.y<0.05*Window.height or f.y>0.90*Window.height):
 			f.color = [1,0,0.4,1]
@@ -209,6 +211,10 @@ class Transmut(App):
 			if f.collide_widget(e):
 				b = self.transmute(e.text,f.text)
 				if b:
+					pop = ElementPop(
+						text="%s + %s = %s" % (e.text,f.text,b), 
+						center=Window.center,
+						app=self)
 					self.sound_find.play()
 					self.universe.remove(e)
 					self.universe.remove(f)
@@ -221,7 +227,24 @@ class Transmut(App):
 						pickle.dump(self.elements_found, output)
 						output.close()						
 						self.update_elements_menu(b)
+					
+					#animation
+					pop.scale = pop.scale*0.2
+					self.game.add_widget(pop)
+					
+					A = Animation(
+						scale  = 1.0,
+						transition = 'out_sine', 
+						duration = 1.0
+					)
+					A.on_complete = partial(self.deletePop,pop)
+					A.start(pop)
+					
 					return 1
+
+	def deletePop(self,*args):
+		pop = args[0]
+		self.game.remove_widget(pop)
 
 	def load_ether(self):
 		f = open(self.data_path + "ether.dat", 'r')
